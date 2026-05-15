@@ -27,7 +27,9 @@
     </developers>
 
     <scm>
-        <url>https://github.com/reqshift/reqshift-engine</url>
+        <url>https://github.com/reqshift-platform/reqshift-engine</url>
+        <connection>scm:git:git@github.com:reqshift-platform/reqshift-engine.git</connection>
+        <developerConnection>scm:git:git@github.com:reqshift-platform/reqshift-engine.git</developerConnection>
     </scm>
 
     <modules>
