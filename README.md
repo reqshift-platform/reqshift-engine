@@ -1,5 +1,8 @@
 # ReqShift Engine
 
+[![CI](https://github.com/reqshift/reqshift-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/reqshift/reqshift-engine/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+
 Open source engine for analysing, scoring, and securing REST/OpenAPI specifications.
 
 > Lighthouse for APIs. SonarQube for APIs.
