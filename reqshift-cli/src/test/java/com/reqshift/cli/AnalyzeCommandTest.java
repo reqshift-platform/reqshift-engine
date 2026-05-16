@@ -109,10 +109,50 @@ class AnalyzeCommandTest {
         Path spec = tmp.resolve("a.yaml");
         Files.writeString(spec, "openapi: 3.0.3\ninfo: {title: T, version: 1.0.0}\npaths: {}\n");
 
-        int exitCode = execute("analyze", spec.toString(), "--format", "json");
+        int exitCode = execute("analyze", spec.toString(), "--format", "xml");
 
         assertThat(exitCode).isEqualTo(2);
         assertThat(stderr()).contains("Unsupported format");
+    }
+
+    @Test
+    void jsonFormatProducesParseableOutput(@TempDir Path tmp) throws Exception {
+        Path spec = tmp.resolve("clean.yaml");
+        Files.writeString(
+                spec,
+                """
+                openapi: 3.0.3
+                info:
+                  title: Clean API
+                  version: 1.0.0
+                  description: A perfectly fine API description.
+                servers:
+                  - url: https://api.example.com
+                security:
+                  - bearerAuth: []
+                paths:
+                  /pets:
+                    get:
+                      operationId: listPets
+                      responses:
+                        '200':
+                          description: ok
+                components:
+                  securitySchemes:
+                    bearerAuth:
+                      type: http
+                      scheme: bearer
+                      bearerFormat: JWT
+                """);
+
+        int exitCode = execute("analyze", spec.toString(), "--format", "json");
+
+        assertThat(exitCode).isEqualTo(0);
+        String output = stdout();
+        assertThat(output).startsWith("{");
+        assertThat(output).contains("\"grade\" : \"A\"");
+        assertThat(output).contains("\"overall\" : 100");
+        assertThat(output).contains("\"results\" : [ ]");
     }
 
     @Test

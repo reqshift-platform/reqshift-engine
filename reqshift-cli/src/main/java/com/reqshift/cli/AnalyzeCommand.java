@@ -15,6 +15,7 @@ import com.reqshift.core.model.Severity;
 import com.reqshift.core.parse.OpenApiLoadException;
 import com.reqshift.core.parse.OpenApiLoader;
 import com.reqshift.output.ConsoleReportFormatter;
+import com.reqshift.output.JsonReportFormatter;
 import com.reqshift.rules.DefaultRules;
 import com.reqshift.scoring.ScoreCalculator;
 
@@ -40,16 +41,15 @@ public final class AnalyzeCommand implements Callable<Integer> {
     @Option(
             names = "--format",
             defaultValue = "console",
-            description = "Output format. Currently only 'console' is supported.")
+            description = "Output format: console (default) or json.")
     private String format;
 
     @Override
     public Integer call() {
-        if (!"console".equalsIgnoreCase(format)) {
+        String fmt = format == null ? "console" : format.toLowerCase();
+        if (!fmt.equals("console") && !fmt.equals("json")) {
             System.err.println(
-                    "Unsupported format: "
-                            + format
-                            + ". Only 'console' is implemented in this version.");
+                    "Unsupported format: " + format + ". Supported formats: console, json.");
             return 2;
         }
 
@@ -72,7 +72,12 @@ public final class AnalyzeCommand implements Callable<Integer> {
         AnalysisReport report =
                 new AnalysisReport(
                         results, new ScoreCalculator().compute(results), file.toString());
-        System.out.println(new ConsoleReportFormatter().format(report));
+
+        String rendered =
+                fmt.equals("json")
+                        ? new JsonReportFormatter().format(report)
+                        : new ConsoleReportFormatter().format(report);
+        System.out.println(rendered);
 
         boolean blocking =
                 results.stream()
