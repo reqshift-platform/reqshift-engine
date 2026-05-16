@@ -47,6 +47,8 @@ class AnalyzeCommandTest {
                   title: Clean API
                   version: 1.0.0
                   description: A perfectly fine API description.
+                servers:
+                  - url: https://api.example.com
                 paths:
                   /pets:
                     get:
