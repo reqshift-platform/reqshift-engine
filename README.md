@@ -25,8 +25,8 @@ java -jar reqshift-cli/target/reqshift.jar analyze examples/petstore.yaml --form
 
 ## Features
 
-- **24 rules across 4 categories** (Conformance, Security, Design, Documentation). The catalog is growing toward 50 rules for v1.
-- **A through F scoring**, weighted by category (Security 30%, Design 20%, Documentation 15%, Schemas 15%, Conformance 10%, HTTP Codes 10%).
+- **50 rules across 6 categories** (Conformance, Security, Design, HTTP codes, Documentation, Schemas). Full v1 catalog implemented.
+- **A through F scoring**, weighted by category (Security 30%, Design 20%, Documentation 15%, Schemas 15%, Conformance 10%, HTTP Codes 10%) with a **severity cap**: one `CRITICAL` violation caps the grade at C, one `ERROR` caps it at B. The raw weighted score is still exposed so consumers can see how far below the cap the spec really is.
 - **Two output formats** today: human-friendly console and machine-readable JSON. SARIF and HTML are on the roadmap.
 - **CI-friendly exit codes**: 0 if clean, 1 if any `ERROR` or `CRITICAL` violation, 2 on usage errors.
 - **Library-first**: every rule, scorer, and formatter is consumable as a Maven dependency. The CLI is just one consumer.
@@ -56,16 +56,16 @@ Analyse an OpenAPI file and report violations + score.
 ### Console output (default)
 
 ```text
-ReqShift Analysis Report - examples/petstore.yaml
+ReqShift Analysis Report for examples/petstore.yaml
 ============================================================
 
-Overall score: A (92/100)
+Overall score: C (79/100) (capped from 89 due to CRITICAL violation)
 
   CONFORMANCE      97
   SECURITY         79
-  DESIGN           94
-  HTTP_CODES      100
-  DOCUMENTATION    99
+  DESIGN           91
+  HTTP_CODES       88
+  DOCUMENTATION    93
   SCHEMAS         100
 
 Violations:
@@ -76,13 +76,7 @@ Violations:
     Suggestion: Use OAuth2, OpenID Connect, or a bearer token scheme instead
   ⚠ SEC003 WARNING   No security requirement is applied anywhere in the API...
   ⚠ SEC009 WARNING   Mutating operation POST /pets has no security requirement...
-
-[DESIGN]
-  ⚠ DES001 WARNING   Operation GET /pets is missing an operationId...
-  ⚠ DES001 WARNING   Operation POST /pets is missing an operationId...
-
-[DOCUMENTATION]
-  ℹ DOC001 INFO      API is missing a top-level info.description...
+... (and other DESIGN, DOCUMENTATION, HTTP_CODES violations)
 ```
 
 ### JSON output
@@ -91,9 +85,11 @@ Violations:
 {
   "source" : "examples/petstore.yaml",
   "score" : {
-    "grade" : "A",
-    "overall" : 92,
-    "byCategory" : { "SECURITY" : 79, "DESIGN" : 94, "CONFORMANCE" : 97, "..." : "..." }
+    "grade" : "C",
+    "overall" : 79,
+    "rawOverall" : 89,
+    "cappedBy" : "CRITICAL",
+    "byCategory" : { "SECURITY" : 79, "DESIGN" : 91, "CONFORMANCE" : 97, "..." : "..." }
   },
   "results" : [
     {
@@ -146,17 +142,53 @@ Violations:
 | SEC011 | ERROR | OAuth2 flows (except implicit) have tokenUrl |
 | SEC012 | ERROR | OpenIdConnect scheme has openIdConnectUrl |
 
-### Design (1 rule today, 9 more planned)
+### HTTP codes (5 rules)
 
 | ID | Severity | Description |
 |---|---|---|
-| DES001 | WARNING | each operation has a unique operationId |
+| HTTP001 | ERROR | GET and DELETE must not declare a requestBody |
+| HTTP002 | WARNING | each operation documents at least one 4xx, 5xx, or default response |
+| HTTP003 | ERROR | status codes are 100-599, a 1XX-5XX wildcard, or default |
+| HTTP004 | WARNING | 204 responses do not declare a content body |
+| HTTP005 | WARNING | POST returning 201 declares a Location header |
 
-### Documentation (1 rule today, 7 more planned)
+### Design (10 rules)
+
+| ID | Severity | Description |
+|---|---|---|
+| DES001 | WARNING | each operation has an operationId |
+| DES002 | WARNING | path segments are kebab-case |
+| DES003 | INFO | collection paths are plural (with allowlist for /health, /status, etc.) |
+| DES004 | WARNING | no trailing slash |
+| DES005 | WARNING | no verbs in path segments |
+| DES006 | ERROR | operationId is unique across the API |
+| DES007 | INFO | each operation has a summary |
+| DES008 | INFO | each operation has at least one tag |
+| DES009 | ERROR | each `{xxx}` template has a matching `in: path` parameter |
+| DES010 | WARNING | operationId is camelCase |
+
+### Documentation (8 rules)
 
 | ID | Severity | Description |
 |---|---|---|
 | DOC001 | INFO | info.description is present and non-empty |
+| DOC002 | INFO | info.contact has an email or url |
+| DOC003 | INFO | info.license has a name |
+| DOC004 | INFO | each operation has a description |
+| DOC005 | INFO | each parameter has a description |
+| DOC006 | INFO | each schema has a description |
+| DOC007 | INFO | each schema has an example |
+| DOC008 | INFO | each global tag has a description |
+
+### Schemas (5 rules)
+
+| ID | Severity | Description |
+|---|---|---|
+| SCHEMAS001 | WARNING | object schemas declare properties, additionalProperties, or composition |
+| SCHEMAS002 | ERROR | required[] only references declared properties |
+| SCHEMAS003 | ERROR | array schemas declare items |
+| SCHEMAS004 | WARNING | string properties have maxLength, format, pattern, or enum |
+| SCHEMAS005 | INFO | schemas in components/schemas are referenced via $ref |
 
 ## Exit codes
 
@@ -199,12 +231,12 @@ Use the BOM in your own `pom.xml` to consume multiple modules without version dr
 
 ## Roadmap
 
-**v1 (50 rules total)** is the immediate target. Distribution remains:
-- Conformance: 10 (done)
-- Security: 12 (done)
-- Design REST: 10 (1 done, 9 to go)
+**v1 (50 rules)** is complete:
+- Conformance: 10
+- Security: 12
 - HTTP codes: 5
-- Documentation: 8 (1 done, 7 to go)
+- Design REST: 10
+- Documentation: 8
 - Schemas: 5
 
 **Beyond v1**:

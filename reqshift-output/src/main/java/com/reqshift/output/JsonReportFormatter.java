@@ -23,6 +23,10 @@ public final class JsonReportFormatter {
         Map<String, Object> score = new LinkedHashMap<>();
         score.put("grade", String.valueOf(report.score().grade()));
         score.put("overall", report.score().overall());
+        score.put("rawOverall", report.score().rawOverall());
+        score.put(
+                "cappedBy",
+                report.score().cappedBy() == null ? null : report.score().cappedBy().name());
         score.put("byCategory", report.score().byCategory());
         root.put("score", score);
 

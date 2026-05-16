@@ -15,13 +15,21 @@ public final class ConsoleReportFormatter {
 
     public String format(AnalysisReport report) {
         StringBuilder sb = new StringBuilder();
-        sb.append("ReqShift Analysis Report — ").append(report.openApiSource()).append('\n');
+        sb.append("ReqShift Analysis Report for ").append(report.openApiSource()).append('\n');
         sb.append("============================================================\n\n");
         sb.append("Overall score: ")
                 .append(report.score().grade())
                 .append(" (")
                 .append(report.score().overall())
-                .append("/100)\n\n");
+                .append("/100)");
+        if (report.score().isCapped()) {
+            sb.append(" (capped from ")
+                    .append(report.score().rawOverall())
+                    .append(" due to ")
+                    .append(report.score().cappedBy())
+                    .append(" violation)");
+        }
+        sb.append("\n\n");
 
         report.score().byCategory().entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())

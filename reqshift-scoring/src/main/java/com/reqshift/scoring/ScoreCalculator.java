@@ -7,6 +7,7 @@ import java.util.Map;
 import com.reqshift.core.model.Category;
 import com.reqshift.core.model.RuleResult;
 import com.reqshift.core.model.Score;
+import com.reqshift.core.model.Severity;
 
 public final class ScoreCalculator {
 
@@ -18,6 +19,9 @@ public final class ScoreCalculator {
                     Category.SCHEMAS, 15,
                     Category.CONFORMANCE, 10,
                     Category.HTTP_CODES, 10);
+
+    private static final int CAP_CRITICAL = 79;
+    private static final int CAP_ERROR = 89;
 
     public Score compute(List<RuleResult> results) {
         Map<Category, Integer> penalties = new EnumMap<>(Category.class);
@@ -41,9 +45,32 @@ public final class ScoreCalculator {
             weightedSum += scoresByCategory.get(w.getKey()) * w.getValue();
             totalWeight += w.getValue();
         }
-        int overall = (int) Math.round(weightedSum / totalWeight);
+        int rawOverall = (int) Math.round(weightedSum / totalWeight);
 
-        return new Score(grade(overall), Map.copyOf(scoresByCategory), overall);
+        Severity highest = highestSeverity(results);
+        int capped = rawOverall;
+        Severity cappedBy = null;
+        if (highest == Severity.CRITICAL && rawOverall > CAP_CRITICAL) {
+            capped = CAP_CRITICAL;
+            cappedBy = Severity.CRITICAL;
+        } else if (highest == Severity.ERROR && rawOverall > CAP_ERROR) {
+            capped = CAP_ERROR;
+            cappedBy = Severity.ERROR;
+        }
+
+        return new Score(grade(capped), Map.copyOf(scoresByCategory), capped, rawOverall, cappedBy);
+    }
+
+    private Severity highestSeverity(List<RuleResult> results) {
+        Severity max = null;
+        for (RuleResult r : results) {
+            for (var v : r.violations()) {
+                if (max == null || v.severity().ordinal() > max.ordinal()) {
+                    max = v.severity();
+                }
+            }
+        }
+        return max;
     }
 
     private char grade(int overall) {

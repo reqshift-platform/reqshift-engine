@@ -27,7 +27,7 @@ class ConsoleReportFormatterTest {
         Map<Category, Integer> perfect = new EnumMap<>(Category.class);
         for (Category c : Category.values()) perfect.put(c, 100);
         AnalysisReport report =
-                new AnalysisReport(List.of(), new Score('A', perfect, 100), "test.yaml");
+                new AnalysisReport(List.of(), new Score('A', perfect, 100, 100, null), "test.yaml");
 
         String output = formatter.format(report);
 
@@ -67,7 +67,8 @@ class ConsoleReportFormatterTest {
         scores.put(Category.DESIGN, 97);
 
         AnalysisReport report =
-                new AnalysisReport(List.of(result), new Score('A', scores, 99), "test.yaml");
+                new AnalysisReport(
+                        List.of(result), new Score('A', scores, 99, 99, null), "test.yaml");
 
         String output = formatter.format(report);
 
