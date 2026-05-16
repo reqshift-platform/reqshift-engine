@@ -170,6 +170,107 @@ class AnalyzeCommandTest {
     }
 
     @Test
+    void disableFlagHidesRule(@TempDir Path tmp) throws Exception {
+        Path spec = tmp.resolve("dirty.yaml");
+        Files.writeString(
+                spec,
+                """
+                openapi: 3.0.3
+                info: {title: T, version: 1.0.0}
+                paths: {}
+                components:
+                  securitySchemes:
+                    legacy:
+                      type: http
+                      scheme: basic
+                """);
+
+        int exitCode = execute("analyze", spec.toString(), "--disable", "SEC001");
+
+        assertThat(stdout()).doesNotContain("SEC001");
+        assertThat(exitCode).isNotEqualTo(2);
+    }
+
+    @Test
+    void severityFlagOverridesRule(@TempDir Path tmp) throws Exception {
+        Path spec = tmp.resolve("dirty.yaml");
+        Files.writeString(
+                spec,
+                """
+                openapi: 3.0.3
+                info: {title: T, version: 1.0.0}
+                paths: {}
+                components:
+                  securitySchemes:
+                    legacy:
+                      type: http
+                      scheme: basic
+                """);
+
+        int exitCode = execute("analyze", spec.toString(), "--severity", "SEC001=INFO");
+
+        assertThat(stdout()).contains("SEC001");
+        assertThat(stdout()).doesNotContain("CRITICAL");
+        assertThat(exitCode).isEqualTo(0);
+    }
+
+    @Test
+    void configFlagReadsYamlFile(@TempDir Path tmp) throws Exception {
+        Path cfg = tmp.resolve(".reqshift.yml");
+        Files.writeString(
+                cfg,
+                """
+                rules:
+                  disabled: [SEC001]
+                """);
+        Path spec = tmp.resolve("dirty.yaml");
+        Files.writeString(
+                spec,
+                """
+                openapi: 3.0.3
+                info: {title: T, version: 1.0.0}
+                paths: {}
+                components:
+                  securitySchemes:
+                    legacy:
+                      type: http
+                      scheme: basic
+                """);
+
+        int exitCode = execute("analyze", spec.toString(), "--config", cfg.toString());
+
+        assertThat(stdout()).doesNotContain("SEC001");
+        assertThat(exitCode).isNotEqualTo(2);
+    }
+
+    @Test
+    void exitsTwoWhenConfigFileMissing(@TempDir Path tmp) throws Exception {
+        Path spec = tmp.resolve("a.yaml");
+        Files.writeString(spec, "openapi: 3.0.3\ninfo: {title: T, version: 1.0.0}\npaths: {}\n");
+
+        int exitCode =
+                execute(
+                        "analyze",
+                        spec.toString(),
+                        "--config",
+                        tmp.resolve("missing.yml").toString());
+
+        assertThat(exitCode).isEqualTo(2);
+        assertThat(stderr()).contains("Configuration file not found");
+    }
+
+    @Test
+    void exitsTwoForInvalidSeverityValue(@TempDir Path tmp) throws Exception {
+        Path spec = tmp.resolve("a.yaml");
+        Files.writeString(spec, "openapi: 3.0.3\ninfo: {title: T, version: 1.0.0}\npaths: {}\n");
+
+        int exitCode = execute("analyze", spec.toString(), "--severity", "SEC001=NOPE");
+
+        assertThat(exitCode).isEqualTo(2);
+        assertThat(stderr()).contains("Invalid severity");
+    }
+
+    @Test
     void versionFlagReportsVersion() {
         int exitCode = execute("--version");
 

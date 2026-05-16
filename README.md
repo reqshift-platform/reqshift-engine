@@ -45,13 +45,49 @@ Commands:
 ```
 
 ```
-Usage: reqshift analyze [-hV] [--format=<format>] FILE
+Usage: reqshift analyze [-hV] [--config=<configFile>] [--format=<format>]
+                        [--disable=<disabledRules>[,<disabledRules>...]]...
+                        [--severity=<String=String>]... FILE
 Analyse an OpenAPI file and report violations + score.
-      FILE             Path to the OpenAPI specification (YAML or JSON).
-      --format=<...>   Output format: console (default) or json.
-  -h, --help           Show this help message and exit.
-  -V, --version        Print version information and exit.
+      FILE                       Path to the OpenAPI specification (YAML or JSON).
+      --format=<...>             Output format: console (default) or json.
+      --config=<configFile>      Path to a ReqShift configuration file (YAML).
+                                 If omitted, .reqshift.yml is auto-detected in the
+                                 current directory and its parent.
+      --disable=<id,id,...>      Disable one or more rules by ID. Cumulative with --config.
+      --severity=<ID=SEVERITY>   Override the severity of a rule (repeatable).
+                                 Cumulative with --config.
+  -h, --help                     Show this help message and exit.
+  -V, --version                  Print version information and exit.
 ```
+
+### Configuration
+
+ReqShift can be customised through a YAML configuration file. Drop a `.reqshift.yml`
+at the root of the project being analysed (it is auto-detected from the current
+directory and its parent), or pass an explicit path via `--config`.
+
+```yaml
+rules:
+  disabled:
+    - SEC001
+    - DES005
+  severity:
+    DES010: INFO
+    DOC004: WARNING
+```
+
+CLI flags layer on top of the file and are cumulative:
+
+```bash
+reqshift analyze openapi.yaml \
+  --config team-rules.yml \
+  --disable SEC001,SEC003 \
+  --severity DES010=INFO \
+  --severity DOC004=WARNING
+```
+
+Severity values are `INFO`, `WARNING`, `ERROR`, `CRITICAL` (case-insensitive).
 
 ### Console output (default)
 
@@ -240,10 +276,10 @@ Use the BOM in your own `pom.xml` to consume multiple modules without version dr
 - Schemas: 5
 
 **Beyond v1**:
+- Configurable rule selection and per-rule severity overrides (done)
 - SARIF 2.1.0 output (GitHub Code Scanning integration)
 - HTML report
 - Native image GraalVM build (Docker, Homebrew, Scoop, install script)
-- Configurable rule selection and per-rule severity overrides
 
 ## How it compares
 
