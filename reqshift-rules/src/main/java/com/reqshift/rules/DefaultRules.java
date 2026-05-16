@@ -23,7 +23,14 @@ import com.reqshift.rules.design.RuleOperationIdUnique;
 import com.reqshift.rules.design.RulePathParameterDocumented;
 import com.reqshift.rules.design.RulePathSegmentKebabCase;
 import com.reqshift.rules.design.RuleResourcePathIsPlural;
+import com.reqshift.rules.documentation.RuleInfoContactProvided;
 import com.reqshift.rules.documentation.RuleInfoDescriptionRequired;
+import com.reqshift.rules.documentation.RuleInfoLicenseProvided;
+import com.reqshift.rules.documentation.RuleOperationHasDescription;
+import com.reqshift.rules.documentation.RuleParameterHasDescription;
+import com.reqshift.rules.documentation.RuleSchemaHasDescription;
+import com.reqshift.rules.documentation.RuleSchemaHasExample;
+import com.reqshift.rules.documentation.RuleTagHasDescription;
 import com.reqshift.rules.httpcodes.RuleNoBodyOnGetOrDelete;
 import com.reqshift.rules.httpcodes.RuleNoContentOn204;
 import com.reqshift.rules.httpcodes.RuleOperationHasErrorResponse;
@@ -89,7 +96,14 @@ public final class DefaultRules {
                 new RuleOperationHasTags(),
                 new RulePathParameterDocumented(),
                 new RuleOperationIdIsCamelCase(),
-                // Documentation
-                new RuleInfoDescriptionRequired());
+                // Documentation (DOC001-DOC008)
+                new RuleInfoDescriptionRequired(),
+                new RuleInfoContactProvided(),
+                new RuleInfoLicenseProvided(),
+                new RuleOperationHasDescription(),
+                new RuleParameterHasDescription(),
+                new RuleSchemaHasDescription(),
+                new RuleSchemaHasExample(),
+                new RuleTagHasDescription());
     }
 }

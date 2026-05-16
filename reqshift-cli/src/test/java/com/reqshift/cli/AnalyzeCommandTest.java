@@ -47,6 +47,8 @@ class AnalyzeCommandTest {
                   title: Clean API
                   version: 1.0.0
                   description: A perfectly fine API description.
+                  contact: {name: Team, email: api@example.com}
+                  license: {name: Apache 2.0}
                 servers:
                   - url: https://api.example.com
                 security:
@@ -55,6 +57,7 @@ class AnalyzeCommandTest {
                   /pets:
                     get:
                       summary: List all pets
+                      description: Returns every pet currently in the store.
                       tags: [pets]
                       operationId: listPets
                       responses:
@@ -130,6 +133,8 @@ class AnalyzeCommandTest {
                   title: Clean API
                   version: 1.0.0
                   description: A perfectly fine API description.
+                  contact: {name: Team, email: api@example.com}
+                  license: {name: Apache 2.0}
                 servers:
                   - url: https://api.example.com
                 security:
@@ -138,6 +143,7 @@ class AnalyzeCommandTest {
                   /pets:
                     get:
                       summary: List all pets
+                      description: Returns every pet currently in the store.
                       tags: [pets]
                       operationId: listPets
                       responses:

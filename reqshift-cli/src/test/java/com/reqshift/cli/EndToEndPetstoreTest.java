@@ -51,8 +51,8 @@ class EndToEndPetstoreTest {
                 .as("petstore.yaml has a CRITICAL violation, so the CLI must exit 1")
                 .isEqualTo(1);
 
-        assertThat(output).contains("Overall score: A");
-        assertThat(output).contains("(90/100)");
+        assertThat(output).contains("Overall score: B");
+        assertThat(output).contains("(89/100)");
 
         // Expected violations
         assertThat(output).contains("SEC001");
