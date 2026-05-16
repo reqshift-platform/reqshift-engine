@@ -170,6 +170,34 @@ class AnalyzeCommandTest {
     }
 
     @Test
+    void htmlFormatProducesStandaloneHtml(@TempDir Path tmp) throws Exception {
+        Path spec = tmp.resolve("dirty.yaml");
+        Files.writeString(
+                spec,
+                """
+                openapi: 3.0.3
+                info: {title: T, version: 1.0.0}
+                paths: {}
+                components:
+                  securitySchemes:
+                    legacy:
+                      type: http
+                      scheme: basic
+                """);
+
+        int exitCode = execute("analyze", spec.toString(), "--format", "html");
+
+        assertThat(exitCode).isEqualTo(1);
+        String output = stdout();
+        assertThat(output).startsWith("<!DOCTYPE html>");
+        assertThat(output).contains("<title>ReqShift Report");
+        assertThat(output).contains("SEC001");
+        assertThat(output).contains("class=\"badge\">CRITICAL");
+        assertThat(output).contains("</html>");
+        assertThat(output).doesNotContain("<script");
+    }
+
+    @Test
     void sarifFormatProducesValidSarifJson(@TempDir Path tmp) throws Exception {
         Path spec = tmp.resolve("dirty.yaml");
         Files.writeString(

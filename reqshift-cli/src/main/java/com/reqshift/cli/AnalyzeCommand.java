@@ -23,6 +23,7 @@ import com.reqshift.core.model.Severity;
 import com.reqshift.core.parse.OpenApiLoadException;
 import com.reqshift.core.parse.OpenApiLoader;
 import com.reqshift.output.ConsoleReportFormatter;
+import com.reqshift.output.HtmlReportFormatter;
 import com.reqshift.output.JsonReportFormatter;
 import com.reqshift.output.SarifReportFormatter;
 import com.reqshift.rules.DefaultRules;
@@ -50,7 +51,7 @@ public final class AnalyzeCommand implements Callable<Integer> {
     @Option(
             names = "--format",
             defaultValue = "console",
-            description = "Output format: console (default), json, or sarif.")
+            description = "Output format: console (default), json, sarif, or html.")
     private String format;
 
     @Option(
@@ -80,9 +81,14 @@ public final class AnalyzeCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         String fmt = format == null ? "console" : format.toLowerCase();
-        if (!fmt.equals("console") && !fmt.equals("json") && !fmt.equals("sarif")) {
+        if (!fmt.equals("console")
+                && !fmt.equals("json")
+                && !fmt.equals("sarif")
+                && !fmt.equals("html")) {
             System.err.println(
-                    "Unsupported format: " + format + ". Supported formats: console, json, sarif.");
+                    "Unsupported format: "
+                            + format
+                            + ". Supported formats: console, json, sarif, html.");
             return 2;
         }
 
@@ -120,6 +126,9 @@ public final class AnalyzeCommand implements Callable<Integer> {
                     case "json" -> new JsonReportFormatter().format(report);
                     case "sarif" ->
                             new SarifReportFormatter(ManifestVersionProvider.currentVersion())
+                                    .format(report);
+                    case "html" ->
+                            new HtmlReportFormatter(ManifestVersionProvider.currentVersion())
                                     .format(report);
                     default -> new ConsoleReportFormatter().format(report);
                 };

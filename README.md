@@ -50,7 +50,7 @@ Usage: reqshift analyze [-hV] [--config=<configFile>] [--format=<format>]
                         [--severity=<String=String>]... FILE
 Analyse an OpenAPI file and report violations + score.
       FILE                       Path to the OpenAPI specification (YAML or JSON).
-      --format=<...>             Output format: console (default), json, or sarif.
+      --format=<...>             Output format: console (default), json, sarif, or html.
       --config=<configFile>      Path to a ReqShift configuration file (YAML).
                                  If omitted, .reqshift.yml is auto-detected in the
                                  current directory and its parent.
@@ -172,6 +172,17 @@ jobs:
 ```
 
 Violations then surface in the GitHub Security tab as code-scanning alerts.
+
+### HTML report
+
+```bash
+reqshift analyze openapi.yaml --format html > report.html
+open report.html
+```
+
+A single self-contained HTML file (inline CSS, no JavaScript, no external assets)
+with a score gauge, per-category breakdown, and collapsible violation details
+grouped by category. Ideal to share an audit with non-developers.
 
 ## Rule catalog (current)
 
@@ -307,8 +318,9 @@ Use the BOM in your own `pom.xml` to consume multiple modules without version dr
 **Beyond v1**:
 - Configurable rule selection and per-rule severity overrides (done)
 - SARIF 2.1.0 output (GitHub Code Scanning integration) (done)
-- HTML report
+- HTML report (done)
 - Native image GraalVM build (Docker, Homebrew, Scoop, install script)
+- Maven Central publication
 
 ## How it compares
 
