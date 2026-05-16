@@ -50,7 +50,7 @@ Usage: reqshift analyze [-hV] [--config=<configFile>] [--format=<format>]
                         [--severity=<String=String>]... FILE
 Analyse an OpenAPI file and report violations + score.
       FILE                       Path to the OpenAPI specification (YAML or JSON).
-      --format=<...>             Output format: console (default) or json.
+      --format=<...>             Output format: console (default), json, or sarif.
       --config=<configFile>      Path to a ReqShift configuration file (YAML).
                                  If omitted, .reqshift.yml is auto-detected in the
                                  current directory and its parent.
@@ -143,6 +143,35 @@ Violations:
   ]
 }
 ```
+
+### SARIF 2.1.0 output (GitHub Code Scanning)
+
+```bash
+reqshift analyze openapi.yaml --format sarif > reqshift.sarif
+```
+
+The output follows the OASIS SARIF 2.1.0 schema and can be uploaded to GitHub Code
+Scanning via [`github/codeql-action/upload-sarif`](https://github.com/github/codeql-action):
+
+```yaml
+name: API lint
+on: [push, pull_request]
+jobs:
+  reqshift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 25 }
+      - run: |
+          curl -L -o reqshift.jar https://github.com/reqshift-platform/reqshift-engine/releases/latest/download/reqshift.jar
+          java -jar reqshift.jar analyze openapi.yaml --format sarif > reqshift.sarif || true
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reqshift.sarif
+```
+
+Violations then surface in the GitHub Security tab as code-scanning alerts.
 
 ## Rule catalog (current)
 
@@ -277,7 +306,7 @@ Use the BOM in your own `pom.xml` to consume multiple modules without version dr
 
 **Beyond v1**:
 - Configurable rule selection and per-rule severity overrides (done)
-- SARIF 2.1.0 output (GitHub Code Scanning integration)
+- SARIF 2.1.0 output (GitHub Code Scanning integration) (done)
 - HTML report
 - Native image GraalVM build (Docker, Homebrew, Scoop, install script)
 

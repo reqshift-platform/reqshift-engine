@@ -24,6 +24,7 @@ import com.reqshift.core.parse.OpenApiLoadException;
 import com.reqshift.core.parse.OpenApiLoader;
 import com.reqshift.output.ConsoleReportFormatter;
 import com.reqshift.output.JsonReportFormatter;
+import com.reqshift.output.SarifReportFormatter;
 import com.reqshift.rules.DefaultRules;
 import com.reqshift.scoring.ScoreCalculator;
 
@@ -49,7 +50,7 @@ public final class AnalyzeCommand implements Callable<Integer> {
     @Option(
             names = "--format",
             defaultValue = "console",
-            description = "Output format: console (default) or json.")
+            description = "Output format: console (default), json, or sarif.")
     private String format;
 
     @Option(
@@ -79,9 +80,9 @@ public final class AnalyzeCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         String fmt = format == null ? "console" : format.toLowerCase();
-        if (!fmt.equals("console") && !fmt.equals("json")) {
+        if (!fmt.equals("console") && !fmt.equals("json") && !fmt.equals("sarif")) {
             System.err.println(
-                    "Unsupported format: " + format + ". Supported formats: console, json.");
+                    "Unsupported format: " + format + ". Supported formats: console, json, sarif.");
             return 2;
         }
 
@@ -115,9 +116,13 @@ public final class AnalyzeCommand implements Callable<Integer> {
                         results, new ScoreCalculator().compute(results), file.toString());
 
         String rendered =
-                fmt.equals("json")
-                        ? new JsonReportFormatter().format(report)
-                        : new ConsoleReportFormatter().format(report);
+                switch (fmt) {
+                    case "json" -> new JsonReportFormatter().format(report);
+                    case "sarif" ->
+                            new SarifReportFormatter(ManifestVersionProvider.currentVersion())
+                                    .format(report);
+                    default -> new ConsoleReportFormatter().format(report);
+                };
         System.out.println(rendered);
 
         boolean blocking =

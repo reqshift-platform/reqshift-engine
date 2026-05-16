@@ -170,6 +170,33 @@ class AnalyzeCommandTest {
     }
 
     @Test
+    void sarifFormatProducesValidSarifJson(@TempDir Path tmp) throws Exception {
+        Path spec = tmp.resolve("dirty.yaml");
+        Files.writeString(
+                spec,
+                """
+                openapi: 3.0.3
+                info: {title: T, version: 1.0.0}
+                paths: {}
+                components:
+                  securitySchemes:
+                    legacy:
+                      type: http
+                      scheme: basic
+                """);
+
+        int exitCode = execute("analyze", spec.toString(), "--format", "sarif");
+
+        assertThat(exitCode).isEqualTo(1);
+        String output = stdout();
+        assertThat(output).startsWith("{");
+        assertThat(output).contains("\"version\" : \"2.1.0\"");
+        assertThat(output).contains("\"name\" : \"reqshift\"");
+        assertThat(output).contains("\"ruleId\" : \"SEC001\"");
+        assertThat(output).contains("\"level\" : \"error\"");
+    }
+
+    @Test
     void disableFlagHidesRule(@TempDir Path tmp) throws Exception {
         Path spec = tmp.resolve("dirty.yaml");
         Files.writeString(

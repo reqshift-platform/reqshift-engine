@@ -13,15 +13,19 @@ public final class ManifestVersionProvider implements IVersionProvider {
 
     @Override
     public String[] getVersion() {
-        try (InputStream is = getClass().getResourceAsStream(POM_PROPERTIES)) {
+        return new String[] {"reqshift " + currentVersion()};
+    }
+
+    public static String currentVersion() {
+        try (InputStream is = ManifestVersionProvider.class.getResourceAsStream(POM_PROPERTIES)) {
             if (is != null) {
                 Properties props = new Properties();
                 props.load(is);
-                return new String[] {"reqshift " + props.getProperty("version", "unknown")};
+                return props.getProperty("version", "dev");
             }
         } catch (IOException ignored) {
         }
-        String fallback = getClass().getPackage().getImplementationVersion();
-        return new String[] {"reqshift " + (fallback == null ? "dev" : fallback)};
+        String fallback = ManifestVersionProvider.class.getPackage().getImplementationVersion();
+        return fallback == null ? "dev" : fallback;
     }
 }
