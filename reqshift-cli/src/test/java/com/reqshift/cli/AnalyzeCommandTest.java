@@ -58,6 +58,8 @@ class AnalyzeCommandTest {
                       responses:
                         '200':
                           description: ok
+                        '4XX':
+                          description: client error
                 components:
                   securitySchemes:
                     bearerAuth:
@@ -137,6 +139,8 @@ class AnalyzeCommandTest {
                       responses:
                         '200':
                           description: ok
+                        '4XX':
+                          description: client error
                 components:
                   securitySchemes:
                     bearerAuth:

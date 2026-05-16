@@ -15,6 +15,11 @@ import com.reqshift.rules.conformance.RuleServerUrlValid;
 import com.reqshift.rules.conformance.RuleServersDefined;
 import com.reqshift.rules.design.RuleOperationIdRequired;
 import com.reqshift.rules.documentation.RuleInfoDescriptionRequired;
+import com.reqshift.rules.httpcodes.RuleNoBodyOnGetOrDelete;
+import com.reqshift.rules.httpcodes.RuleNoContentOn204;
+import com.reqshift.rules.httpcodes.RuleOperationHasErrorResponse;
+import com.reqshift.rules.httpcodes.RulePost201HasLocationHeader;
+import com.reqshift.rules.httpcodes.RuleValidStatusCode;
 import com.reqshift.rules.security.RuleApiHasGlobalOrPerOpSecurity;
 import com.reqshift.rules.security.RuleApiKeyHasName;
 import com.reqshift.rules.security.RuleBearerHasFormat;
@@ -58,6 +63,12 @@ public final class DefaultRules {
                 new RuleApiKeyHasName(),
                 new RuleOAuth2FlowHasTokenUrl(),
                 new RuleOpenIdConnectHasUrl(),
+                // HTTP codes (HTTP001-HTTP005)
+                new RuleNoBodyOnGetOrDelete(),
+                new RuleOperationHasErrorResponse(),
+                new RuleValidStatusCode(),
+                new RuleNoContentOn204(),
+                new RulePost201HasLocationHeader(),
                 // Design
                 new RuleOperationIdRequired(),
                 // Documentation
