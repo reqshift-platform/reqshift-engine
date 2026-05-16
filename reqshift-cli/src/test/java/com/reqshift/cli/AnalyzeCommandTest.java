@@ -54,6 +54,8 @@ class AnalyzeCommandTest {
                 paths:
                   /pets:
                     get:
+                      summary: List all pets
+                      tags: [pets]
                       operationId: listPets
                       responses:
                         '200':
@@ -135,6 +137,8 @@ class AnalyzeCommandTest {
                 paths:
                   /pets:
                     get:
+                      summary: List all pets
+                      tags: [pets]
                       operationId: listPets
                       responses:
                         '200':
