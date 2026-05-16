@@ -36,6 +36,11 @@ import com.reqshift.rules.httpcodes.RuleNoContentOn204;
 import com.reqshift.rules.httpcodes.RuleOperationHasErrorResponse;
 import com.reqshift.rules.httpcodes.RulePost201HasLocationHeader;
 import com.reqshift.rules.httpcodes.RuleValidStatusCode;
+import com.reqshift.rules.schemas.RuleArrayHasItems;
+import com.reqshift.rules.schemas.RuleNoUnusedSchemas;
+import com.reqshift.rules.schemas.RuleObjectSchemaHasProperties;
+import com.reqshift.rules.schemas.RuleRequiredPropertiesExist;
+import com.reqshift.rules.schemas.RuleStringHasBounds;
 import com.reqshift.rules.security.RuleApiHasGlobalOrPerOpSecurity;
 import com.reqshift.rules.security.RuleApiKeyHasName;
 import com.reqshift.rules.security.RuleBearerHasFormat;
@@ -104,6 +109,12 @@ public final class DefaultRules {
                 new RuleParameterHasDescription(),
                 new RuleSchemaHasDescription(),
                 new RuleSchemaHasExample(),
-                new RuleTagHasDescription());
+                new RuleTagHasDescription(),
+                // Schemas (SCHEMAS001-SCHEMAS005)
+                new RuleObjectSchemaHasProperties(),
+                new RuleRequiredPropertiesExist(),
+                new RuleArrayHasItems(),
+                new RuleStringHasBounds(),
+                new RuleNoUnusedSchemas());
     }
 }
