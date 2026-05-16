@@ -49,6 +49,8 @@ class AnalyzeCommandTest {
                   description: A perfectly fine API description.
                 servers:
                   - url: https://api.example.com
+                security:
+                  - bearerAuth: []
                 paths:
                   /pets:
                     get:
@@ -56,6 +58,12 @@ class AnalyzeCommandTest {
                       responses:
                         '200':
                           description: ok
+                components:
+                  securitySchemes:
+                    bearerAuth:
+                      type: http
+                      scheme: bearer
+                      bearerFormat: JWT
                 """);
 
         int exitCode = execute("analyze", spec.toString());

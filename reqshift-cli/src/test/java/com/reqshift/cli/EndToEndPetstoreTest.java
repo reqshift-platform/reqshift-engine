@@ -52,7 +52,7 @@ class EndToEndPetstoreTest {
                 .isEqualTo(1);
 
         assertThat(output).contains("Overall score: A");
-        assertThat(output).contains("(94/100)");
+        assertThat(output).contains("(92/100)");
 
         // Expected violations
         assertThat(output).contains("SEC001");

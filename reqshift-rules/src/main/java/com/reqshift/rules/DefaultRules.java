@@ -15,7 +15,18 @@ import com.reqshift.rules.conformance.RuleServerUrlValid;
 import com.reqshift.rules.conformance.RuleServersDefined;
 import com.reqshift.rules.design.RuleOperationIdRequired;
 import com.reqshift.rules.documentation.RuleInfoDescriptionRequired;
+import com.reqshift.rules.security.RuleApiHasGlobalOrPerOpSecurity;
+import com.reqshift.rules.security.RuleApiKeyHasName;
+import com.reqshift.rules.security.RuleBearerHasFormat;
+import com.reqshift.rules.security.RuleMutatingOpsHaveSecurity;
+import com.reqshift.rules.security.RuleNoApiKeyInQuery;
 import com.reqshift.rules.security.RuleNoBasicHttpAuth;
+import com.reqshift.rules.security.RuleNoOAuth2ImplicitFlow;
+import com.reqshift.rules.security.RuleOAuth2FlowHasTokenUrl;
+import com.reqshift.rules.security.RuleOAuth2HasScopes;
+import com.reqshift.rules.security.RuleOpenIdConnectHasUrl;
+import com.reqshift.rules.security.RuleSecuritySchemesDefined;
+import com.reqshift.rules.security.RuleServersUseHttps;
 
 public final class DefaultRules {
 
@@ -34,10 +45,21 @@ public final class DefaultRules {
                 new RuleOperationHasResponses(),
                 new RuleOperationHasSuccessResponse(),
                 new RuleParameterHasSchema(),
+                // Security (SEC001-SEC012)
+                new RuleNoBasicHttpAuth(),
+                new RuleSecuritySchemesDefined(),
+                new RuleApiHasGlobalOrPerOpSecurity(),
+                new RuleNoOAuth2ImplicitFlow(),
+                new RuleNoApiKeyInQuery(),
+                new RuleOAuth2HasScopes(),
+                new RuleServersUseHttps(),
+                new RuleBearerHasFormat(),
+                new RuleMutatingOpsHaveSecurity(),
+                new RuleApiKeyHasName(),
+                new RuleOAuth2FlowHasTokenUrl(),
+                new RuleOpenIdConnectHasUrl(),
                 // Design
                 new RuleOperationIdRequired(),
-                // Security
-                new RuleNoBasicHttpAuth(),
                 // Documentation
                 new RuleInfoDescriptionRequired());
     }
