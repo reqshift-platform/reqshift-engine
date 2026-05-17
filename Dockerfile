@@ -4,15 +4,24 @@
 
 ARG MUSL_VERSION=1.2.5
 ARG ZLIB_VERSION=1.3.1
+ARG MAVEN_VERSION=3.9.9
 
 # --- builder ----------------------------------------------------------
 FROM ghcr.io/graalvm/native-image-community:25-ol9 AS builder
 
 ARG MUSL_VERSION
 ARG ZLIB_VERSION
+ARG MAVEN_VERSION
 
-RUN microdnf install -y maven gcc make tar gzip findutils \
+RUN microdnf install -y gcc make tar gzip findutils \
     && microdnf clean all
+
+# The Maven shipped with the base image is too old (3.6.3); the project
+# enforces 3.9+. Install Apache Maven from the archive (always available).
+RUN curl -fsSL -o /tmp/maven.tar.gz "https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz" \
+    && tar -xzf /tmp/maven.tar.gz -C /opt \
+    && rm /tmp/maven.tar.gz \
+    && ln -s "/opt/apache-maven-${MAVEN_VERSION}/bin/mvn" /usr/local/bin/mvn
 
 # Build musl libc from source. GraalVM static-with-musl needs musl-gcc on the PATH.
 WORKDIR /opt
