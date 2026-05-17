@@ -339,9 +339,10 @@ via GitHub Actions. Cold start is around 50 ms, on par with native CLIs.
 | Asset                          | Platform           |
 |--------------------------------|--------------------|
 | `reqshift-linux-x64`           | Linux x86_64       |
-| `reqshift-macos-x64`           | macOS Intel        |
 | `reqshift-macos-arm64`         | macOS Apple Silicon|
-| `reqshift-windows-x64.exe`     | Windows x86_64     |
+
+> macOS Intel and Windows native binaries are planned for a later release.
+> In the meantime, use the fat JAR (`reqshift.jar`, requires a JRE 25+).
 
 Download the asset for your platform from the
 [Releases page](https://github.com/reqshift-platform/reqshift-engine/releases),

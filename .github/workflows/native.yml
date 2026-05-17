@@ -19,15 +19,9 @@ jobs:
           - os: ubuntu-latest
             asset: reqshift-linux-x64
             binary: reqshift
-          - os: macos-13
-            asset: reqshift-macos-x64
-            binary: reqshift
           - os: macos-latest
             asset: reqshift-macos-arm64
             binary: reqshift
-          - os: windows-latest
-            asset: reqshift-windows-x64.exe
-            binary: reqshift.exe
 
     steps:
       - name: Checkout
@@ -51,19 +45,10 @@ jobs:
       - name: Build native binary
         run: mvn -B -ntp -Pnative -DskipTests -pl reqshift-cli -am package
 
-      - name: Smoke test (POSIX)
-        if: runner.os != 'Windows'
+      - name: Smoke test
         run: |
           ./reqshift-cli/target/${{ matrix.binary }} --version
           ./reqshift-cli/target/${{ matrix.binary }} analyze examples/petstore.yaml || true
-
-      - name: Smoke test (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          .\reqshift-cli\target\${{ matrix.binary }} --version
-          .\reqshift-cli\target\${{ matrix.binary }} analyze examples/petstore.yaml
-          if ($LASTEXITCODE -gt 1) { exit $LASTEXITCODE }
 
       - name: Rename binary
         shell: bash
