@@ -320,7 +320,7 @@ Use the BOM in your own `pom.xml` to consume multiple modules without version dr
 - SARIF 2.1.0 output (GitHub Code Scanning integration) (done)
 - HTML report (done)
 - Native image GraalVM build (done)
-- Docker image FROM scratch (done)
+- Docker image distroless (done) ; FROM scratch (musl static) — planned
 - Maven Central publication
 - Homebrew, Scoop, install script
 
@@ -374,9 +374,10 @@ java -agentlib:native-image-agent=config-merge-dir=reqshift-cli/src/main/resourc
 
 ## Docker
 
-A `FROM scratch` image (~25 MB total) is published per release on GHCR. The binary
-is fully statically linked against musl libc, so the image carries no OS, no shell,
-no package manager — just the executable.
+A minimal image (~60 MB) is published per release on GHCR. It uses
+[`gcr.io/distroless/base-debian12`](https://github.com/GoogleContainerTools/distroless)
+as the runtime: glibc and a handful of shared libraries the native binary links
+against, no shell, no package manager, runs as a non-root user.
 
 ```bash
 docker run --rm -v "$PWD:/work" ghcr.io/reqshift-platform/reqshift:latest \
@@ -393,9 +394,8 @@ docker build -t reqshift:local .
 docker run --rm -v "$PWD/examples:/work" reqshift:local analyze /work/petstore.yaml
 ```
 
-The Dockerfile uses a multi-stage build that compiles musl + static zlib in the
-builder stage, then invokes `mvn -Pnative-static` to produce a fully static
-binary, copied into a `FROM scratch` final image.
+A fully static `FROM scratch` variant (linked against musl libc) is on the
+roadmap for a later release.
 
 ## Building from source
 
