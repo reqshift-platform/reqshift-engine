@@ -29,7 +29,9 @@ RUN curl -fsSL -o musl.tar.gz "https://musl.libc.org/releases/musl-${MUSL_VERSIO
 ENV PATH=/opt/musl/bin:$PATH
 
 # Build zlib statically with musl-gcc; GraalVM links against it.
-RUN curl -fsSL -o zlib.tar.gz "https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz" \
+# We pull from GitHub releases instead of zlib.net to avoid the moving
+# /fossils/ path once a new release ships.
+RUN curl -fsSL -o zlib.tar.gz "https://github.com/madler/zlib/releases/download/v${ZLIB_VERSION}/zlib-${ZLIB_VERSION}.tar.gz" \
     && tar -xzf zlib.tar.gz \
     && rm zlib.tar.gz \
     && cd "zlib-${ZLIB_VERSION}" \
