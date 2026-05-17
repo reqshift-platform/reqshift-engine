@@ -2,16 +2,16 @@
 # linked against musl libc, then ships it in a FROM scratch image.
 # Final image is roughly the size of the binary itself (~30 MB).
 
+ARG MUSL_VERSION=1.2.5
 ARG ZLIB_VERSION=1.3.1
 ARG MAVEN_VERSION=3.9.9
-ARG MUSL_TOOLCHAIN_URL=https://musl.cc/x86_64-linux-musl-native.tgz
 
 # --- builder ----------------------------------------------------------
 FROM ghcr.io/graalvm/native-image-community:25-ol9 AS builder
 
+ARG MUSL_VERSION
 ARG ZLIB_VERSION
 ARG MAVEN_VERSION
-ARG MUSL_TOOLCHAIN_URL
 
 RUN microdnf install -y gcc make tar gzip findutils \
     && microdnf clean all
@@ -22,12 +22,19 @@ RUN curl -fsSL -o /tmp/maven.tar.gz "https://archive.apache.org/dist/maven/maven
     && rm /tmp/maven.tar.gz \
     && ln -s "/opt/apache-maven-${MAVEN_VERSION}/bin/mvn" /usr/local/bin/mvn
 
-# musl toolchain. GraalVM expects the triplet-named compiler
-# (x86_64-linux-musl-gcc), which the musl.cc native bundle ships ready to use.
-RUN mkdir -p /opt/musl \
-    && curl -fsSL -o /tmp/musl.tgz "${MUSL_TOOLCHAIN_URL}" \
-    && tar -xzf /tmp/musl.tgz -C /opt/musl --strip-components=1 \
-    && rm /tmp/musl.tgz
+# Build musl libc from source (musl.libc.org is more reliable than musl.cc).
+# We then symlink the wrapper under the triplet name GraalVM expects
+# (x86_64-linux-musl-gcc).
+RUN curl -fsSL -o /tmp/musl.tar.gz "https://musl.libc.org/releases/musl-${MUSL_VERSION}.tar.gz" \
+    && tar -xzf /tmp/musl.tar.gz -C /tmp \
+    && rm /tmp/musl.tar.gz \
+    && cd "/tmp/musl-${MUSL_VERSION}" \
+    && ./configure --prefix=/opt/musl --disable-shared \
+    && make -j"$(nproc)" \
+    && make install \
+    && cd / \
+    && rm -rf "/tmp/musl-${MUSL_VERSION}" \
+    && ln -s /opt/musl/bin/musl-gcc /opt/musl/bin/x86_64-linux-musl-gcc
 
 ENV PATH=/opt/musl/bin:$PATH
 ENV LIBRARY_PATH=/opt/musl/lib
