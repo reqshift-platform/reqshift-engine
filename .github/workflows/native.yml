@@ -1,0 +1,85 @@
+name: Native image
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.asset }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset: reqshift-linux-x64
+            binary: reqshift
+          - os: macos-13
+            asset: reqshift-macos-x64
+            binary: reqshift
+          - os: macos-latest
+            asset: reqshift-macos-arm64
+            binary: reqshift
+          - os: windows-latest
+            asset: reqshift-windows-x64.exe
+            binary: reqshift.exe
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up GraalVM CE 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: graalvm-community
+          java-version: '25'
+          cache: maven
+
+      - name: Show toolchain versions
+        shell: bash
+        run: |
+          java -version
+          native-image --version
+          mvn -version
+
+      - name: Build native binary
+        run: mvn -B -ntp -Pnative -DskipTests -pl reqshift-cli -am package
+
+      - name: Smoke test (POSIX)
+        if: runner.os != 'Windows'
+        run: |
+          ./reqshift-cli/target/${{ matrix.binary }} --version
+          ./reqshift-cli/target/${{ matrix.binary }} analyze examples/petstore.yaml || true
+
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          .\reqshift-cli\target\${{ matrix.binary }} --version
+          .\reqshift-cli\target\${{ matrix.binary }} analyze examples/petstore.yaml
+          if ($LASTEXITCODE -gt 1) { exit $LASTEXITCODE }
+
+      - name: Rename binary
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp "reqshift-cli/target/${{ matrix.binary }}" "dist/${{ matrix.asset }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: dist/${{ matrix.asset }}
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/${{ matrix.asset }}

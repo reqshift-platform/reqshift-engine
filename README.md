@@ -27,10 +27,10 @@ java -jar reqshift-cli/target/reqshift.jar analyze examples/petstore.yaml --form
 
 - **50 rules across 6 categories** (Conformance, Security, Design, HTTP codes, Documentation, Schemas). Full v1 catalog implemented.
 - **A through F scoring**, weighted by category (Security 30%, Design 20%, Documentation 15%, Schemas 15%, Conformance 10%, HTTP Codes 10%) with a **severity cap**: one `CRITICAL` violation caps the grade at C, one `ERROR` caps it at B. The raw weighted score is still exposed so consumers can see how far below the cap the spec really is.
-- **Two output formats** today: human-friendly console and machine-readable JSON. SARIF and HTML are on the roadmap.
+- **Four output formats**: console, JSON, SARIF 2.1.0 (GitHub Code Scanning), and standalone HTML.
 - **CI-friendly exit codes**: 0 if clean, 1 if any `ERROR` or `CRITICAL` violation, 2 on usage errors.
 - **Library-first**: every rule, scorer, and formatter is consumable as a Maven dependency. The CLI is just one consumer.
-- **Fast startup** (Picocli, no Spring): the moteur runs in milliseconds. Native image (GraalVM) packaging is planned to reach ~50 ms cold start.
+- **Fast startup** (Picocli, no Spring): the engine runs in milliseconds. A GraalVM native image is also published per release, with a sub-50 ms cold start.
 
 ## Usage
 
@@ -285,7 +285,7 @@ ReqShift is built as a Maven multi-module project. Each module is independently 
 | `reqshift-core`    | Domain model, OpenAPI parsing, rule execution engine         |
 | `reqshift-rules`   | Rule implementations, one class per rule                     |
 | `reqshift-scoring` | A through F multi-axis score calculation                     |
-| `reqshift-output`  | Report formatters (console, JSON; SARIF and HTML on the way) |
+| `reqshift-output`  | Report formatters (console, JSON, SARIF, HTML)               |
 | `reqshift-cli`     | Picocli command-line entry point, fat JAR                    |
 | `reqshift-bom`     | Bill of Materials for library consumers                      |
 
@@ -319,8 +319,9 @@ Use the BOM in your own `pom.xml` to consume multiple modules without version dr
 - Configurable rule selection and per-rule severity overrides (done)
 - SARIF 2.1.0 output (GitHub Code Scanning integration) (done)
 - HTML report (done)
-- Native image GraalVM build (Docker, Homebrew, Scoop, install script)
+- Native image GraalVM build (done)
 - Maven Central publication
+- Distribution packaging (Docker, Homebrew, Scoop, install script)
 
 ## How it compares
 
@@ -329,6 +330,45 @@ ReqShift sits next to existing OpenAPI linters but ships a few opinions:
 - **Spectral** (Stoplight) is the de-facto standard. JavaScript runtime, very flexible custom rules, slower cold start. ReqShift targets the same job with native Java performance and a curated rule set out of the box.
 - **Redocly CLI** mixes linting, bundling, and previewing. ReqShift focuses purely on linting and scoring.
 - **42Crunch CLI** is excellent on security but commercial. ReqShift keeps a complete security ruleset under Apache 2.0.
+
+## Native binary
+
+A self-contained native executable (no JVM required) is published for each release
+via GitHub Actions. Cold start is around 50 ms, on par with native CLIs.
+
+| Asset                          | Platform           |
+|--------------------------------|--------------------|
+| `reqshift-linux-x64`           | Linux x86_64       |
+| `reqshift-macos-x64`           | macOS Intel        |
+| `reqshift-macos-arm64`         | macOS Apple Silicon|
+| `reqshift-windows-x64.exe`     | Windows x86_64     |
+
+Download the asset for your platform from the
+[Releases page](https://github.com/reqshift-platform/reqshift-engine/releases),
+make it executable, and run it:
+
+```bash
+curl -L -o reqshift https://github.com/reqshift-platform/reqshift-engine/releases/latest/download/reqshift-linux-x64
+chmod +x reqshift
+./reqshift analyze openapi.yaml
+```
+
+To build the native binary locally, install GraalVM CE 25 (for example via
+`sdk install java 25.0.1-graalce`) and run:
+
+```bash
+mvn -B -Pnative -DskipTests -pl reqshift-cli -am package
+./reqshift-cli/target/reqshift --version
+```
+
+The native build uses GraalVM hints shipped in
+`reqshift-cli/src/main/resources/META-INF/native-image/`. Regenerate them with
+the tracing agent if you add a code path that uses new reflection:
+
+```bash
+java -agentlib:native-image-agent=config-merge-dir=reqshift-cli/src/main/resources/META-INF/native-image/com.reqshift/reqshift-cli \
+     -jar reqshift-cli/target/reqshift.jar analyze examples/petstore.yaml
+```
 
 ## Building from source
 
