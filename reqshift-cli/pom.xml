@@ -120,10 +120,10 @@
                             <quickBuild>false</quickBuild>
                             <buildArgs>
                                 <buildArg>--no-fallback</buildArg>
-                                <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
-                                <buildArg>-H:IncludeResources=examples/.*</buildArg>
+                                <buildArg>--gc=serial</buildArg>
+                                <buildArg>-Os</buildArg>
+                                <buildArg>-H:IncludeLocales=en</buildArg>
                                 <buildArg>--enable-url-protocols=http,https</buildArg>
-                                <buildArg>--report-unsupported-elements-at-runtime</buildArg>
                             </buildArgs>
                         </configuration>
                     </plugin>
