@@ -34,11 +34,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up GraalVM CE 25
-        uses: actions/setup-java@v4
+        uses: graalvm/setup-graalvm@v1
         with:
           distribution: graalvm-community
           java-version: '25'
           cache: maven
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Show toolchain versions
         shell: bash
