@@ -320,8 +320,9 @@ Use the BOM in your own `pom.xml` to consume multiple modules without version dr
 - SARIF 2.1.0 output (GitHub Code Scanning integration) (done)
 - HTML report (done)
 - Native image GraalVM build (done)
+- Docker image FROM scratch (done)
 - Maven Central publication
-- Distribution packaging (Docker, Homebrew, Scoop, install script)
+- Homebrew, Scoop, install script
 
 ## How it compares
 
@@ -370,6 +371,31 @@ the tracing agent if you add a code path that uses new reflection:
 java -agentlib:native-image-agent=config-merge-dir=reqshift-cli/src/main/resources/META-INF/native-image/com.reqshift/reqshift-cli \
      -jar reqshift-cli/target/reqshift.jar analyze examples/petstore.yaml
 ```
+
+## Docker
+
+A `FROM scratch` image (~25 MB total) is published per release on GHCR. The binary
+is fully statically linked against musl libc, so the image carries no OS, no shell,
+no package manager — just the executable.
+
+```bash
+docker run --rm -v "$PWD:/work" ghcr.io/reqshift-platform/reqshift:latest \
+    analyze /work/openapi.yaml
+```
+
+Tags : `latest`, `<major>.<minor>` (e.g. `0.1`), and `<full-version>` (e.g. `0.1.0`).
+Release candidates are published as `0.1.0-rc1` etc. but do not move the `latest` tag.
+
+Build the image locally (requires Docker):
+
+```bash
+docker build -t reqshift:local .
+docker run --rm -v "$PWD/examples:/work" reqshift:local analyze /work/petstore.yaml
+```
+
+The Dockerfile uses a multi-stage build that compiles musl + static zlib in the
+builder stage, then invokes `mvn -Pnative-static` to produce a fully static
+binary, copied into a `FROM scratch` final image.
 
 ## Building from source
 

@@ -1,0 +1,13 @@
+.git/
+.github/
+target/
+**/target/
+*.log
+.DS_Store
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+/tmp/
